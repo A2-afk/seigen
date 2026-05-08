@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>世界民謡研究会 セトリジェネレーター</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;
+  --bdr:#333;--bdr2:#444;
+  --ak:#e8c84a;--ak2:#c8a830;
+  --tx:#f0ece0;--tx2:#a09888;--tx3:#6a6258;
+  --day1:#5090e0;--day2:#e07030;
+  --info:#5090e0;--ok:#1D9E75;--ng:#e05050;
+}
+html,body{background:var(--bg);color:var(--tx);font-family:'Hiragino Kaku Gothic Pro','Noto Sans JP',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+nav{display:flex;border-bottom:1px solid var(--ak);background:var(--bg2);position:sticky;top:0;z-index:10}
+.nav-brand{padding:12px 14px;font-size:12px;color:var(--ak);font-weight:700;letter-spacing:.06em;margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-tab{padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--tx3);border-bottom:2px solid transparent;letter-spacing:.04em;transition:all .15s;white-space:nowrap;min-width:80px;text-align:center}
+.nav-tab.active{color:var(--ak);border-bottom-color:var(--ak)}
+.page{display:none;padding:14px;max-width:800px;margin:0 auto}
+.page.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+h2{font-size:15px;font-weight:700;color:var(--ak);margin-bottom:12px;letter-spacing:.04em}
+label{font-size:12px;color:var(--tx2);letter-spacing:.04em;display:block;margin-bottom:4px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+input[type=text],input[type=number],input[type=password]{
+  background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);
+  padding:10px 12px;border-radius:6px;font-size:16px;width:100%;
+  font-family:inherit;transition:border-color .15s;
+  -webkit-appearance:none;appearance:none
+}
+input:focus{outline:none;border-color:var(--ak)}
+.btn{
+  padding:11px 18px;border-radius:6px;font-size:14px;font-family:inherit;
+  cursor:pointer;border:1px solid var(--bdr2);background:transparent;
+  color:var(--tx2);font-weight:600;transition:all .15s;
+  -webkit-appearance:none;touch-action:manipulation;min-height:44px
+}
+.btn:active{opacity:.75;transform:scale(.97)}
+.btn-ak{background:var(--ak);color:#1a1400;border-color:var(--ak)}
+.btn-danger{color:var(--ng);border-color:#553}
+.btn-danger:active{border-color:var(--ng)}
+.btn-sm{padding:8px 12px;font-size:13px;min-height:36px}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mt10{margin-top:10px}
+.sync-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:6px;font-size:12px;color:var(--tx3);margin-bottom:10px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--tx3);flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:var(--ok)}.sync-dot.err{background:var(--ng)}.sync-dot.connecting{background:var(--ak)}
+.sl-select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.sl-select-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s;touch-action:manipulation}
+.sl-select-card:active{opacity:.75}
+.sl-select-name{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.sl-select-count{font-size:12px;color:var(--tx3)}
+/* intensity slider */
+.intensity-wrap{margin:12px 0}
+.intensity-track{position:relative;height:44px;display:flex;align-items:center;cursor:pointer;user-select:none;touch-action:none}
+.intensity-rail{position:absolute;left:0;right:0;height:5px;background:var(--bg3);border-radius:3px;border:1px solid var(--bdr)}
+.intensity-fill{position:absolute;left:0;height:5px;border-radius:3px;pointer-events:none}
+.intensity-ticks{position:absolute;left:0;right:0;display:flex;justify-content:space-between;pointer-events:none}
+.intensity-tick{width:2px;height:12px;background:var(--bdr2);border-radius:1px;margin-top:-4px}
+.intensity-thumb{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid var(--ak);background:var(--bg2);transform:translateX(-50%);cursor:grab;z-index:2;touch-action:none}
+.intensity-labels{display:flex;justify-content:space-between;margin-top:6px}
+.intensity-lbl{font-size:10px;color:var(--tx3);text-align:center;width:20%;cursor:pointer;user-select:none;padding:4px 0}
+.intensity-lbl.active-lbl{font-weight:700}
+.intensity-valtext{font-size:13px;font-weight:600;margin-top:4px}
+/* band rows */
+.band-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--bdr)}
+.band-row:last-child{border-bottom:none}
+.bnum{font-size:18px;font-weight:700;color:var(--tx3);min-width:24px;line-height:1.3}
+.binfo{flex:1;min-width:0}
+.bname{font-size:14px;font-weight:600;color:var(--tx)}
+.bsong{font-size:12px;color:var(--tx2);margin:2px 0 4px}
+.bmem{font-size:11px;color:var(--tx3);word-break:break-all}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600;margin-left:6px;vertical-align:middle;border:1px solid}
+.bc{background:rgba(29,158,117,.12);color:#5DCAA5;border-color:rgba(29,158,117,.3)}
+.bm{background:rgba(186,117,23,.12);color:#EF9F27;border-color:rgba(186,117,23,.3)}
+.bh{background:rgba(226,75,74,.12);color:#F09595;border-color:rgba(226,75,74,.3)}
+/* admin login */
+.pw-screen{display:flex;align-items:center;justify-content:center;min-height:60vh;padding:20px}
+.pw-box{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:28px 24px;width:100%;max-width:320px;text-align:center}
+.pw-box h2{margin-bottom:16px}
+.pw-err{color:var(--ng);font-size:13px;margin-top:8px}
+/* chips */
+.chip-group{display:inline-flex;align-items:stretch;border:1px solid var(--bdr);border-radius:6px;overflow:hidden}
+.chip-group-active{border-color:var(--ak)}
+.chip-name{padding:8px 13px;font-size:13px;cursor:pointer;border:none;border-right:1px solid var(--bdr);background:transparent;color:var(--tx2);font-weight:600;touch-action:manipulation;min-height:36px}
+.chip-name:active{opacity:.75}
+.active-chip-name{background:var(--ak);color:#1a1400;border-right-color:var(--ak2)}
+.chip-icon{padding:8px 10px;font-size:15px;cursor:pointer;border:none;background:transparent;color:var(--tx3);line-height:1;touch-action:manipulation;min-height:36px;min-width:36px}
+.chip-icon:active{opacity:.75}
+/* result */
+.stat-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.stat{background:var(--bg3);border-radius:6px;padding:10px;text-align:center;flex:1;min-width:55px}
+.stat-val{font-size:20px;font-weight:700;color:var(--ak)}
+.stat-lbl{font-size:10px;color:var(--tx3)}
+.days-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;overflow-x:auto}
+.day-hdr{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:4px;margin-bottom:8px;display:inline-block}
+.dh1{background:rgba(80,144,224,.12);color:var(--day1);border:1px solid rgba(80,144,224,.25)}
+.dh2{background:rgba(224,112,48,.12);color:var(--day2);border:1px solid rgba(224,112,48,.25)}
+.dh3{background:rgba(120,80,200,.12);color:#a070e0;border:1px solid rgba(120,80,200,.25)}
+.slot-card{background:var(--bg3);border-radius:6px;padding:10px 12px;margin-bottom:6px;display:flex;gap:10px}
+.snum{font-size:20px;font-weight:700;color:var(--tx3);min-width:24px;line-height:1.1;margin-top:2px}
+.sbody{flex:1;min-width:0}
+.stime{font-size:11px;color:var(--tx3);margin-bottom:1px}
+.sname{font-size:13px;font-weight:600;color:var(--tx)}
+.ssong{font-size:12px;color:var(--tx2);margin:2px 0 3px}
+.smem{font-size:11px;color:var(--tx3);word-break:break-all}
+.group-wrap{border:1px solid rgba(80,144,224,.3);border-radius:6px;padding:4px;margin-bottom:6px;background:rgba(80,144,224,.04)}
+.group-label{font-size:10px;color:var(--info);padding:2px 8px 4px;letter-spacing:.06em;text-transform:uppercase}
+.group-wrap .slot-card{margin-bottom:3px;background:var(--bg2)}
+.group-wrap .slot-card:last-child{margin-bottom:0}
+.empty{color:var(--tx3);font-size:13px;text-align:center;padding:28px;border:1px dashed var(--bdr);border-radius:8px}
+.msg-ok{color:#5DCAA5;font-size:13px}
+.msg-err{color:var(--ng);font-size:13px}
+/* mobile overrides */
+@media(max-width:500px){
+  .form-grid{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+  .days-grid{grid-template-columns:1fr}
+  .sl-select-grid{grid-template-columns:1fr}
+  .nav-brand{font-size:11px;padding:12px 10px}
+  .nav-tab{padding:12px 12px;font-size:12px}
+  .flex{gap:6px}
+}
+
+/* ── collapsible admin cards ── */
+.ac-card-hdr{display:flex;align-items:center;cursor:pointer;user-select:none;gap:10px;padding:2px 0}
+.ac-card-hdr h2{margin:0;flex:1}
+.ac-card-toggle{font-size:18px;color:var(--tx3);transition:transform .2s;line-height:1;flex-shrink:0}
+.ac-card-toggle.open{transform:rotate(180deg)}
+.ac-card-body{overflow:hidden;transition:max-height .35s ease,opacity .25s;max-height:0;opacity:0}
+.ac-card-body.open{max-height:4000px;opacity:1}
+/* エントリー済みバンドリストのスクロールボックス */
+.band-list-scroll{max-height:320px;overflow-y:auto;margin-top:10px;
+  border:1px solid var(--bdr);border-radius:6px;padding:0 8px;
+  scrollbar-width:thin;scrollbar-color:var(--bdr2) transparent}
+.band-list-scroll::-webkit-scrollbar{width:5px}
+.band-list-scroll::-webkit-scrollbar-track{background:transparent}
+.band-list-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+/* ── drag & drop setlist ── */
+.slot-card{cursor:grab;transition:opacity .15s}
+.slot-card.dragging{opacity:.3;pointer-events:none}
+.drag-handle{color:var(--tx3);font-size:18px;padding:0 8px 0 0;cursor:grab;user-select:none;flex-shrink:0;align-self:center;touch-action:none}
+.day-drop-zone{min-height:40px;position:relative}
+.drop-indicator{height:3px;background:var(--ak);border-radius:2px;margin:2px 0;display:none;pointer-events:none}
+.drop-indicator.active{display:block}
+/* ── autocomplete ── */
+#ac-drop{position:fixed;z-index:1000;background:var(--bg2);border:1px solid var(--ak);border-radius:8px;max-height:220px;overflow-y:auto;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,.5);display:none}
+.ac-item{padding:10px 14px;cursor:pointer;font-size:14px;display:flex;align-items:baseline;gap:8px;border-bottom:1px solid var(--bdr)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.ac-on{background:var(--bg3)}
+.ac-item.ac-on .ac-nm{color:var(--ak)}
+.ac-nm{font-weight:600;color:var(--tx)}
+.ac-rd{font-size:11px;color:var(--tx3)}
+/* roster admin */
+.roster-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.roster-row:last-child{border-bottom:none}
+.roster-nm{flex:1;font-size:13px;color:var(--tx)}
+.roster-rd{font-size:12px;color:var(--tx3)}
+/* 開始時刻コントロール */
+.start-time-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border:1px solid var(--bdr);border-radius:6px;font-size:12px;color:var(--tx3)}
+.start-time-row label{margin:0;font-size:12px;color:var(--tx3);letter-spacing:.03em}
+input[type=time]{background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);padding:5px 8px;border-radius:5px;font-size:13px;font-family:inherit;-webkit-appearance:none;appearance:none;min-height:34px}
+input[type=time]:focus{outline:none;border-color:var(--ak)}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">世界民謡研究会</span>
+  <button class="nav-tab active" id="tab-user" onclick="showPage('user')">エントリー</button>
+  <button class="nav-tab" id="tab-admin" onclick="showPage('admin-gate')">管理者</button>
+</nav>
+
+<!-- ユーザーページ -->
+<div id="page-user" class="page active">
+  <div class="sync-bar"><div class="sync-dot connecting" id="sync-dot-u"></div><span id="sync-txt-u">接続中...</span></div>
+  <div class="card" id="u-step-select">
+    <h2>エントリーするセトリを選んでください</h2>
+    <div id="u-sl-list"><div class="empty">読み込み中...</div></div>
+  </div>
+  <div id="u-step-form" style="display:none">
+    <div class="card">
+      <div class="flex" style="margin-bottom:12px;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:var(--tx3);margin-bottom:3px">エントリー先のセトリ</div>
+          <div style="font-size:15px;font-weight:700;color:var(--ak);word-break:break-all" id="u-sl-selected-name"></div>
+        </div>
+        <button class="btn btn-sm" onclick="unselectUserSl()" style="flex-shrink:0">&#x2190; 戻る</button>
+      </div>
+      <!-- 受付停止メッセージ -->
+      <div id="u-closed-msg" style="display:none;margin:8px 0 4px">
+        <div style="background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.35);border-radius:8px;padding:16px;text-align:center">
+          <div style="font-size:22px;margin-bottom:6px">&#x1F6AB;</div>
+          <div style="font-weight:700;color:var(--ng);font-size:15px;margin-bottom:4px">エントリー受付停止中</div>
+          <div style="font-size:13px;color:var(--tx2)">このセトリは現在エントリーを受け付けていません。<br>管理者にお問い合わせください。</div>
+        </div>
+      </div>
+      <!-- エントリーフォーム本体 -->
+      <div id="u-form-inner">
+      <h2 style="border-top:1px solid var(--bdr);padding-top:12px;margin-top:4px">バンド情報を入力</h2>
+      <div class="form-grid">
+        <div class="fg full"><label>バンド名 *</label><input type="text" id="u-band" placeholder="例：The Rockers" autocomplete="off"></div>
+        <div class="fg full"><label>バンマス（バンドマスター）*</label><input type="text" id="u-bandmaster" placeholder="名前" autocomplete="off"></div>
+        <div class="fg full"><label>演奏曲名 *</label><input type="text" id="u-song" placeholder="例：Highway to Hell" autocomplete="off"></div>
+        <div class="fg"><label>Vo（ボーカル）</label><input type="text" id="u-vo" placeholder="名前" autocomplete="off"></div>
+        <div class="fg"><label>Gt1（ギター1）</label><input type="text" id="u-gt1" placeholder="名前" autocomplete="off"></div>
+        <div class="fg"><label>Gt2（ギター2）</label><input type="text" id="u-gt2" placeholder="省略可" autocomplete="off"></div>
+        <div class="fg"><label>Ba（ベース）</label><input type="text" id="u-ba" placeholder="名前" autocomplete="off"></div>
+        <div class="fg"><label>Key（キーボード）</label><input type="text" id="u-key" placeholder="省略可" autocomplete="off"></div>
+        <div class="fg"><label>Dr（ドラム）</label><input type="text" id="u-dr" placeholder="名前" autocomplete="off"></div>
+        <div class="fg"><label>BPM（任意）</label><input type="number" id="u-bpm" placeholder="120" min="40" max="300" inputmode="numeric"></div>
+        <div class="fg"><label>演奏曲数 *</label><input type="number" id="u-numSongs" placeholder="1" min="1" max="10" inputmode="numeric" value="1"></div>
+      </div>
+      <div class="intensity-wrap">
+        <label>曲の雰囲気</label>
+        <div class="intensity-track" id="itrack">
+          <div class="intensity-rail"></div>
+          <div class="intensity-fill" id="ifill"></div>
+          <div class="intensity-ticks" id="iticks"></div>
+          <div class="intensity-thumb" id="ithumb"></div>
+        </div>
+        <div class="intensity-labels" id="ilabels"></div>
+        <div class="intensity-valtext" id="ivaltext"></div>
+      </div>
+      <div class="flex mt10">
+        <button class="btn btn-ak" id="submit-btn" onclick="submitBand()">エントリーする</button>
+        <span id="u-msg"></span>
+      </div>
+      </div><!-- /u-form-inner -->
+    </div>
+    <div class="card">
+      <div class="flex" style="margin-bottom:10px">
+        <h2 style="margin:0;flex:1" id="u-list-title">エントリー済みバンド</h2>
+        <button class="btn btn-sm" onclick="manualRefresh()">&#x21BB; 更新</button>
+      </div>
+      <div id="user-band-list"><div class="empty">まだエントリーがありません</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 管理者ログイン -->
+<div id="page-admin-gate" class="page">
+  <div class="pw-screen">
+    <div class="pw-box">
+      <h2>管理者ログイン</h2>
+      <input type="password" id="pw-input" placeholder="パスワード" style="margin-bottom:12px;text-align:center;letter-spacing:.1em" onkeydown="if(event.key==='Enter')checkPw()" autocomplete="current-password">
+      <button class="btn btn-ak" style="width:100%" onclick="checkPw()">ログイン</button>
+      <div class="pw-err" id="pw-err"></div>
+      <div style="font-size:12px;color:var(--tx3);margin-top:16px">初期パスワード: admin</div>
+    </div>
+  </div>
+</div>
+
+<!-- 管理者ページ -->
+<div id="page-admin" class="page">
+  <div class="sync-bar"><div class="sync-dot ok" id="sync-dot-a"></div><span id="sync-txt-a">Firebase 接続済み（自動更新中）</span></div>
+  <div class="card">
+    <div class="flex" style="margin-bottom:12px">
+      <h2 style="margin:0;flex:1">セトリ管理</h2>
+      <button class="btn btn-sm btn-danger" onclick="adminLogout()">ログアウト</button>
+    </div>
+    <div class="flex" style="margin-bottom:8px">
+      <input type="text" id="new-sl-name" placeholder="新しいセトリ名（例：春ライブ2025）" style="flex:1" onkeydown="if(event.key==='Enter')createSetlist()" autocomplete="off">
+      <select id="new-sl-days" style="background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);padding:8px 10px;border-radius:6px;font-size:14px;font-family:inherit;min-height:44px">
+        <option value="1">1日</option>
+        <option value="2" selected>2日</option>
+        <option value="3">3日</option>
+      </select>
+      <input type="number" id="new-sl-maxbm" placeholder="1人あたり上限（0=無制限）" min="0" max="999" inputmode="numeric" style="width:80px;text-align:center" title="バンマス上限（0で無制限）">
+      <input type="number" id="new-sl-breakmin" placeholder="休憩(分)" min="0" max="90" inputmode="numeric" style="width:75px;text-align:center" value="60" title="1日あたりの休憩時間（分）60か90を推奨">
+      <button class="btn btn-ak btn-sm" onclick="createSetlist()">作成</button>
+    </div>
+    <div class="flex mt10" id="sl-chips" style="flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div class="card">
+    <div class="ac-card-hdr" onclick="toggleCard('pw-body','pw-toggle')">
+      <h2>パスワード変更</h2>
+      <span class="ac-card-toggle" id="pw-toggle">&#x2303;</span>
+    </div>
+    <div class="ac-card-body" id="pw-body">
+      <div style="height:12px"></div>
+      <div class="flex">
+        <input type="password" id="pw-new1" placeholder="新しいパスワード" style="flex:1" autocomplete="new-password">
+        <input type="password" id="pw-new2" placeholder="確認" style="flex:1" autocomplete="new-password">
+        <button class="btn btn-sm" onclick="changePw()">変更</button>
+      </div>
+      <div id="pw-change-msg" style="font-size:13px;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="card" id="roster-card">
+    <div class="ac-card-hdr" onclick="toggleCard('roster-body','roster-toggle')">
+      <h2>名簿管理 <span id="roster-count-badge" style="font-size:12px;font-weight:400;color:var(--tx3)"></span></h2>
+      <span class="ac-card-toggle" id="roster-toggle">&#x2303;</span>
+    </div>
+    <div class="ac-card-body" id="roster-body">
+      <div style="height:12px"></div>
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:10px">名前を登録するとエントリーフォームで予測入力が使えます</div>
+      <div style="margin-bottom:12px">
+        <label style="margin-bottom:6px">Googleスプレッドシートから貼り付け</label>
+        <div style="font-size:11px;color:var(--tx3);margin-bottom:6px">「名前」「よみがな」の2列を選択→コピー→ここに貼り付け（タブ区切り）。よみがな列は省略可。</div>
+        <textarea id="roster-import-txt" placeholder="例：&#10;根本 越&#9;ねもとえつ&#10;山田 太郎&#9;やまだたろう" style="width:100%;height:90px;background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);border-radius:6px;padding:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+        <div class="flex mt10">
+          <button class="btn btn-ak btn-sm" onclick="importRoster()">インポート</button>
+          <span id="roster-import-msg" style="font-size:12px"></span>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--bdr);padding-top:12px;margin-bottom:12px">
+        <label style="margin-bottom:6px">手動で追加</label>
+        <div class="flex">
+          <input type="text" id="roster-add-name" placeholder="名前（例：根本 越）" style="flex:2;min-width:0" autocomplete="off">
+          <input type="text" id="roster-add-reading" placeholder="よみがな（例：ねもとえつ）" style="flex:2;min-width:0" autocomplete="off">
+          <button class="btn btn-ak btn-sm" onclick="addRosterMember()" style="flex-shrink:0">追加</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--bdr);padding-top:12px">
+        <div class="flex" style="margin-bottom:8px">
+          <span style="font-size:12px;color:var(--tx3);flex:1" id="roster-count">0名登録</span>
+          <button class="btn btn-sm btn-danger" onclick="clearRoster()">全削除</button>
+        </div>
+        <div id="roster-list" style="max-height:220px;overflow-y:auto"><div class="empty">名簿が空です</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-content"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════
+   Firebase REST API（fetch のみ・SDK不要）
+═══════════════════════════════════ */
+const FB = 'https://setlist-generator-19e2d-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+async function fbRequest(method,path,data){
+  const opts={method};
+  if(data!==undefined){opts.headers={'Content-Type':'application/json'};opts.body=JSON.stringify(data);}
+  const r=await fetch(FB+'/'+path+'.json',opts);
+  if(!r.ok)throw new Error(method+' '+path+' '+r.status);
+  return method==='DELETE'?undefined:r.json();
+}
+const fbGet   =(path)      =>fbRequest('GET',   path);
+const fbPush  =(path,data) =>fbRequest('POST',  path,data);
+const fbSet   =(path,data) =>fbRequest('PUT',   path,data);
+const fbPatch =(path,data) =>fbRequest('PATCH', path,data);
+const fbDelete=(path)      =>fbRequest('DELETE',path);
+
+/* ═══════════════════════════════════
+   ポーリングで全デバイス対応
+   （SSEはスマホで不安定なので使わない）
+═══════════════════════════════════ */
+let pollTimer=null;
+const POLL_MS=8000;
+
+function startPolling(){
+  stopPolling();
+  pollTimer=setInterval(pollOnce,POLL_MS);
+}
+function stopPolling(){
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+}
+
+async function pollOnce(){
+  try{
+    const data=await fbGet('setlists');
+    slMap=data||{};
+    setSyncStatus('u',true,'Firebase 同期中（'+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'）');
+    applyUpdate();
+  }catch(e){
+    setSyncStatus('u',false,'同期エラー（再試行中）');
+  }
+}
+function applyUpdate(){
+  if(document.getElementById('page-user').classList.contains('active')){
+    if(userSlId){const sl=findSl(userSlId);if(sl)renderUserBandList(sl);else{unselectUserSl();renderUserSlList();}}
+    else renderUserSlList();
+  }
+  if(adminLoggedIn&&document.getElementById('page-admin').classList.contains('active')){
+    renderChips();if(currentSlId)renderAdminContent();
+  }
+}
+
+/* ページ表示中だけポーリング（バッテリー・通信節約） */
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)stopPolling();else{pollOnce();startPolling();}
+});
+
+/* ═══════════════════════════════════
+   アプリ状態
+═══════════════════════════════════ */
+const LEVELS=[
+  {v:1,label:'穏やか',    color:'#1D9E75'},
+  {v:2,label:'やや穏やか',color:'#639922'},
+  {v:3,label:'ふつう',    color:'#BA7517'},
+  {v:4,label:'やや激しい',color:'#D85A30'},
+  {v:5,label:'激しい',    color:'#E24B4A'}
+];
+let intensity=3,adminLoggedIn=false,currentSlId=null,userSlId=null;
+let pw='admin',slMap={},roster=[];
+
+function slList(){
+  return Object.entries(slMap).map(([fbKey,v])=>({...v,fbKey})).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+}
+function findSl(id){return slList().find(s=>s.id===id);}
+
+/* ═══════════════════════════════════
+   ユーティリティ
+═══════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function ibadge(v){
+  if(v<=2)return'<span class="badge bc">'+(LEVELS[v-1]?LEVELS[v-1].label:'穏やか')+'</span>';
+  if(v===3)return'<span class="badge bm">ふつう</span>';
+  return'<span class="badge bh">'+(LEVELS[v-1]?LEVELS[v-1].label:'激しい')+'</span>';
+}
+function mstr(b){return['vo','gt1','gt2','ba','key','dr'].filter(p=>b[p]).map(p=>p.toUpperCase()+': '+esc(b[p])).join(' / ');}
+function norm(s){return(s||'').replace(/\s/g,'').toLowerCase();}
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2,6);}
+function setSyncStatus(side,ok,txt){
+  const dot=document.getElementById('sync-dot-'+side);
+  const span=document.getElementById('sync-txt-'+side);
+  if(!dot||!span)return;
+  dot.className='sync-dot '+(ok?'ok':'err');
+  span.textContent=txt;
+}
+function clearInputs(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+
+/* ═══════════════════════════════════
+   スライダー（タッチ対応）
+═══════════════════════════════════ */
+function buildSlider(){
+  document.getElementById('iticks').innerHTML=LEVELS.map(()=>'<div class="intensity-tick"></div>').join('');
+  document.getElementById('ilabels').innerHTML=LEVELS.map(l=>'<div class="intensity-lbl" onclick="setIntensity('+l.v+')">'+l.label+'</div>').join('');
+  const track=document.getElementById('itrack');
+  function pctToV(px){
+    const r=track.getBoundingClientRect();
+    return Math.max(1,Math.min(5,Math.round(Math.max(0,Math.min(1,(px-r.left)/r.width))*4)+1));
+  }
+  track.addEventListener('click',e=>setIntensity(pctToV(e.clientX)));
+  let drag=false;
+  const thumb=document.getElementById('ithumb');
+  thumb.addEventListener('mousedown',e=>{drag=true;e.preventDefault();});
+  document.addEventListener('mousemove',e=>{if(drag)setIntensity(pctToV(e.clientX));});
+  document.addEventListener('mouseup',()=>drag=false);
+  /* タッチ：thumb だけでなく track 全体でも動く */
+  track.addEventListener('touchstart',e=>{drag=true;setIntensity(pctToV(e.touches[0].clientX));e.preventDefault();},{passive:false});
+  document.addEventListener('touchmove',e=>{if(drag)setIntensity(pctToV(e.touches[0].clientX));},{passive:true});
+  document.addEventListener('touchend',()=>drag=false);
+  setIntensity(3);
+}
+function setIntensity(v){
+  intensity=v;
+  const pct=(v-1)/4,col=LEVELS[v-1].color;
+  const fill=document.getElementById('ifill');
+  const thumb=document.getElementById('ithumb');
+  if(fill){fill.style.width=pct*100+'%';fill.style.background=col;}
+  if(thumb){thumb.style.left=pct*100+'%';thumb.style.borderColor=col;}
+  const vt=document.getElementById('ivaltext');
+  if(vt){vt.style.color=col;vt.textContent=LEVELS[v-1].label;}
+  document.querySelectorAll('.intensity-lbl').forEach((el,i)=>{
+    el.classList.toggle('active-lbl',i===v-1);
+    el.style.color=i===v-1?col:'';
+  });
+}
+
+/* ═══════════════════════════════════
+   ナビ
+═══════════════════════════════════ */
+function showPage(name){
+  ['user','admin-gate','admin'].forEach(p=>document.getElementById('page-'+p).classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(name==='admin-gate'){
+    document.getElementById('page-'+(adminLoggedIn?'admin':'admin-gate')).classList.add('active');
+  }else{
+    document.getElementById('page-'+name).classList.add('active');
+  }
+  document.getElementById(name==='user'?'tab-user':'tab-admin').classList.add('active');
+  if(name==='user')renderUserSlList();
+}
+
+/* ═══════════════════════════════════
+   認証
+═══════════════════════════════════ */
+function checkPw(){
+  if(document.getElementById('pw-input').value===pw){
+    adminLoggedIn=true;
+    document.getElementById('pw-err').textContent='';
+    document.getElementById('page-admin-gate').classList.remove('active');
+    document.getElementById('page-admin').classList.add('active');
+    renderChips();renderAdminContent();
+  }else{
+    document.getElementById('pw-err').textContent='パスワードが違います';
+  }
+}
+function adminLogout(){
+  adminLoggedIn=false;
+  document.getElementById('pw-input').value='';
+  showPage('admin-gate');
+}
+async function changePw(){
+  const n1=document.getElementById('pw-new1').value;
+  const n2=document.getElementById('pw-new2').value;
+  const msg=document.getElementById('pw-change-msg');
+  if(!n1){msg.className='msg-err';msg.textContent='パスワードを入力してください';return;}
+  if(n1!==n2){msg.className='msg-err';msg.textContent='パスワードが一致しません';return;}
+  try{
+    await fbSet('config/pw',n1);pw=n1;
+    clearInputs(['pw-new1','pw-new2']);
+    msg.className='msg-ok';msg.textContent='パスワードを変更しました';
+    setTimeout(()=>msg.textContent='',3000);
+  }catch(e){msg.className='msg-err';msg.textContent='保存に失敗しました';}
+}
+
+/* ═══════════════════════════════════
+   ユーザー：セトリ選択
+═══════════════════════════════════ */
+function renderUserSlList(){
+  const el=document.getElementById('u-sl-list');
+  const list=slList();
+  if(!list.length){el.innerHTML='<div class="empty">管理者がまだセトリを作成していません</div>';return;}
+  el.innerHTML='<div class="sl-select-grid">'+list.map(s=>{
+    const cnt=Object.keys(s.bands||{}).length;
+    const maxBmCard=s.maxBandmasters||0;
+    const bmTxt=maxBmCard>0?(' / 1人あたり上限 '+maxBmCard+'バンド'):'';
+    const isAccepting=s.accepting!==false;
+    const acceptBadge=isAccepting
+      ?'<span style="font-size:10px;background:rgba(29,158,117,.15);color:var(--ok);border:1px solid rgba(29,158,117,.3);border-radius:3px;padding:1px 6px;margin-left:6px;vertical-align:middle">受付中</span>'
+      :'<span style="font-size:10px;background:rgba(224,80,80,.15);color:var(--ng);border:1px solid rgba(224,80,80,.3);border-radius:3px;padding:1px 6px;margin-left:6px;vertical-align:middle">受付停止</span>';
+    return '<div class="sl-select-card" data-id="'+esc(s.id)+'" style="opacity:'+(isAccepting?'1':'0.55')+'">'
+      +'<div class="sl-select-name">'+esc(s.name)+acceptBadge+'</div>'
+      +'<div class="sl-select-count">エントリー済み '+cnt+' バンド'+bmTxt+'</div>'
+      +'</div>';
+  }).join('')+'</div>';
+  /* イベントをまとめて付与（event delegation より各カードへ直接付与） */
+  el.querySelectorAll('.sl-select-card').forEach(card=>{
+    card.addEventListener('click',()=>selectUserSl(card.dataset.id));
+  });
+}
+function selectUserSl(id){
+  userSlId=id;
+  const sl=findSl(id);if(!sl)return;
+  document.getElementById('u-step-select').style.display='none';
+  document.getElementById('u-step-form').style.display='block';
+  const accepting=sl.accepting!==false;
+  document.getElementById('u-sl-selected-name').textContent=sl.name;
+  document.getElementById('u-list-title').textContent='「'+sl.name+'」のエントリー済みバンド';
+  /* フォームとボタンの表示切り替え */
+  const formCard=document.getElementById('u-form-inner');
+  const closedMsg=document.getElementById('u-closed-msg');
+  if(formCard) formCard.style.display=accepting?'block':'none';
+  if(closedMsg) closedMsg.style.display=accepting?'none':'block';
+  renderUserBandList(sl);
+}
+function unselectUserSl(){
+  userSlId=null;
+  document.getElementById('u-step-select').style.display='block';
+  document.getElementById('u-step-form').style.display='none';
+  renderUserSlList();
+}
+function renderUserBandList(sl){
+  const el=document.getElementById('user-band-list');
+  const bands=Object.values(sl.bands||{}).sort((a,b)=>(a.addedAt||0)-(b.addedAt||0));
+  if(!bands.length){el.innerHTML='<div class="empty">まだエントリーがありません</div>';return;}
+  el.innerHTML=bands.map((b,i)=>'<div class="band-row">'
+    +'<div class="bnum">'+(i+1)+'</div>'
+    +'<div class="binfo">'
+    +'<div class="bname">'+esc(b.name)+ibadge(b.intensity)+'</div>'
+    +'<div class="bsong">&#9834; '+esc(b.song)+(b.bpm?' <span style="color:var(--tx3)">BPM '+esc(b.bpm)+'</span>':'')+(b.numSongs?'<span style="color:var(--tx3)"> / '+b.numSongs+'曲 ('+bandDur(b)+'分)</span>':'')+'</div>'
+    +(b.bandmaster?'<div class="bmem" style="color:var(--ak2)">&#x1F3B8; バンマス: '+esc(b.bandmaster)+'</div>':'')
+    +'<div class="bmem">'+mstr(b)+'</div>'
+    +'</div></div>').join('');
+}
+async function manualRefresh(){
+  setSyncStatus('u',false,'更新中...');
+  await pollOnce();
+  if(userSlId){const sl=findSl(userSlId);if(sl)renderUserBandList(sl);}
+}
+
+/* ═══════════════════════════════════
+   ユーザー：エントリー送信
+═══════════════════════════════════ */
+async function submitBand(){
+  if(!userSlId){alert('セトリを選んでください');return;}
+  const sl=findSl(userSlId);if(!sl)return;
+  if(sl.accepting===false){
+    document.getElementById('u-msg').className='msg-err';
+    document.getElementById('u-msg').textContent='このセトリは現在エントリーを受け付けていません。';
+    return;
+  }
+  const name=document.getElementById('u-band').value.trim();
+  const bandmaster=document.getElementById('u-bandmaster').value.trim();
+  const song=document.getElementById('u-song').value.trim();
+  const msgEl=document.getElementById('u-msg');
+  if(!name||!bandmaster||!song){msgEl.className='msg-err';msgEl.textContent='バンド名・バンマス・曲名は必須です';return;}
+  /* バンマス出演数チェック（最新データで判定） */
+  await pollOnce();
+  const slFresh=findSl(userSlId);
+  if(slFresh){
+    const maxPerBm=slFresh.maxBandmasters||0;
+    if(maxPerBm>0){
+      const bmKey=norm(bandmaster);
+      const count=Object.values(slFresh.bands||{}).filter(b=>norm(b.bandmaster)===bmKey).length;
+      if(count>=maxPerBm){
+        msgEl.className='msg-err';
+        msgEl.textContent='「'+bandmaster+'」はすでに'+count+'バンドのバンマスです。1人あたりの上限（'+maxPerBm+'バンド）に達しているため、これ以上エントリーできません。';
+        return;
+      }
+    }
+  }
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='送信中...';
+  const numSongs=Math.max(1,parseInt(document.getElementById('u-numSongs').value)||1);
+  const band={
+    id:uid(),name,bandmaster,song,
+    bpm:document.getElementById('u-bpm').value.trim(),
+    numSongs:numSongs,
+    vo:document.getElementById('u-vo').value.trim(),
+    gt1:document.getElementById('u-gt1').value.trim(),
+    gt2:document.getElementById('u-gt2').value.trim(),
+    ba:document.getElementById('u-ba').value.trim(),
+    key:document.getElementById('u-key').value.trim(),
+    dr:document.getElementById('u-dr').value.trim(),
+    intensity,addedAt:Date.now()
+  };
+  try{
+    await fbPatch('setlists/'+sl.fbKey+'/bands/'+band.id,band);
+    clearInputs(['u-band','u-bandmaster','u-song','u-bpm','u-vo','u-gt1','u-gt2','u-ba','u-key','u-dr']);
+    document.getElementById('u-numSongs').value='1';
+    setIntensity(3);
+    msgEl.className='msg-ok';msgEl.textContent='エントリーしました！';
+    setTimeout(()=>msgEl.textContent='',4000);
+    /* 送信後すぐポーリングして一覧を更新 */
+    await pollOnce();
+  }catch(e){
+    msgEl.className='msg-err';msgEl.textContent='送信に失敗しました。通信状況を確認して再度お試しください。';
+  }
+  btn.disabled=false;btn.textContent='エントリーする';
+}
+
+/* ═══════════════════════════════════
+   管理者：セトリ CRUD
+═══════════════════════════════════ */
+function renderChips(){
+  const el=document.getElementById('sl-chips');if(!el)return;
+  const list=slList();
+  if(!list.length){el.innerHTML='<span style="font-size:12px;color:var(--tx3)">セトリがまだありません</span>';return;}
+  /* data-* 属性 + event delegation でonclick内の引用符衝突を回避 */
+  el.innerHTML=list.map(s=>{
+    const active=s.id===currentSlId;
+    return '<div class="chip-group'+(active?' chip-group-active':'')+'">'
+      +'<button class="chip-name'+(active?' active-chip-name':'')+'" data-act="sel" data-id="'+esc(s.id)+'">'+esc(s.name)+'</button>'
+      +'<button class="chip-icon" title="&#x30B3;&#x30D4;&#x30FC;" data-act="copy" data-id="'+esc(s.id)+'">&#x2398;</button>'
+      +'<button class="chip-icon" style="color:var(--ng)" title="&#x524A;&#x9664;" data-act="del" data-id="'+esc(s.id)+'">&#x00D7;</button>'
+      +'</div>';
+  }).join('');
+  /* イベントを一括バインド */
+  el.querySelectorAll('button[data-act]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      const id=this.dataset.id;
+      const act=this.dataset.act;
+      if(act==='sel')selectSl(id);
+      else if(act==='copy')copySl(id);
+      else if(act==='del')deleteSl(id);
+    });
+  });
+}
+async function createSetlist(){
+  const name=document.getElementById('new-sl-name').value.trim();
+  if(!name){alert('セトリ名を入力してください');return;}
+  const days=parseInt(document.getElementById('new-sl-days').value)||2;
+  const maxBm=parseInt(document.getElementById('new-sl-maxbm').value)||0;
+  const id='sl_'+uid();
+  try{
+    const breakMin=parseInt(document.getElementById('new-sl-breakmin').value)||60;
+await fbPush('setlists',{id,name,days,maxBandmasters:maxBm,breakMin,bands:{},day1:[],day2:[],day3:[],createdAt:Date.now()});
+    document.getElementById('new-sl-name').value='';
+    currentSlId=id;
+    await pollOnce();
+    renderChips();renderAdminContent();
+  }catch(e){alert('作成に失敗しました: '+e.message);}
+}
+function selectSl(id){currentSlId=id;renderChips();renderAdminContent();}
+async function deleteSl(id){
+  if(!confirm('このセトリを削除しますか？'))return;
+  const sl=findSl(id);if(!sl)return;
+  try{
+    await fbDelete('setlists/'+sl.fbKey);
+    if(currentSlId===id)currentSlId=null;
+    await pollOnce();renderChips();renderAdminContent();
+  }catch(e){alert('削除に失敗しました');}
+}
+async function copySl(id){
+  const src=findSl(id);if(!src)return;
+  const newId='sl_'+uid();
+  const copy=JSON.parse(JSON.stringify(src));
+  copy.id=newId;copy.name=src.name+' .copy';copy.createdAt=Date.now();
+  delete copy.fbKey;
+  try{
+    await fbPush('setlists',copy);
+    currentSlId=newId;
+    await pollOnce();renderChips();renderAdminContent();
+  }catch(e){alert('コピーに失敗しました');}
+}
+async function deleteBand(slId,bandId){
+  if(!confirm('このバンドを削除しますか？'))return;
+  const sl=findSl(slId);if(!sl)return;
+  try{
+    await fbDelete('setlists/'+sl.fbKey+'/bands/'+bandId);
+    await pollOnce();renderAdminContent();
+  }catch(e){alert('削除に失敗しました');}
+}
+
+/* ═══════════════════════════════════
+   管理者：コンテンツ描画
+═══════════════════════════════════ */
+
+/* バンド一覧 HTML を生成（スクロールボックス付き） */
+function buildBandListHtml(bands,sl){
+  if(!bands.length)return'<div class="empty">エントリーなし</div>';
+  const maxBm=sl.maxBandmasters||0;
+  const bmMap=bmCountMap(sl);
+  const rows=bands.map((b,i)=>{
+    const bmKey=b.bandmaster?norm(b.bandmaster):'';
+    const bmCnt=bmKey?(bmMap[bmKey]?bmMap[bmKey].count:0):0;
+    const bmOver=maxBm>0&&bmCnt>=maxBm;
+    const bmTag=b.bandmaster
+      ?('<div class="bmem" style="color:'+(bmOver?'var(--ng)':'var(--ak2)')+'">&#x1F3B8; バンマス: '+esc(b.bandmaster)+(maxBm>0?' ('+bmCnt+'/'+maxBm+'バンド)'+(bmOver?' &#x26A0; 上限':''):'')+'</div>')
+      :'';
+    return '<div class="band-row">'
+      +'<div class="bnum">'+(i+1)+'</div>'
+      +'<div class="binfo">'
+      +'<div class="bname">'+esc(b.name)+ibadge(b.intensity)+'</div>'
+      +'<div class="bsong">&#9834; '+esc(b.song)+(b.bpm?' <span style="color:var(--tx3)">BPM '+esc(b.bpm)+'</span>':'')+'</div>'
+      +bmTag
+      +'<div class="bmem">'+mstr(b)+'</div>'
+      +'</div>'
+      +'<button class="btn btn-sm btn-danger" onclick="deleteBand(this.dataset.slid,this.dataset.bid)" data-slid="'+esc(sl.id)+'" data-bid="'+esc(b.id)+'">削除</button>'
+      +'</div>';
+  }).join('');
+  return '<div class="band-list-scroll">'+rows+'</div>';
+}
+
+/* コントロール類 HTML を生成 */
+function buildControlsHtml(sl){
+  const numDays=sl.days||2;
+  const maxBm=sl.maxBandmasters||0;
+  const breakMin=sl.breakMin||60;
+  const accepting=sl.accepting!==false;
+  const bmMap=bmCountMap(sl);
+  const hasOver=maxBm>0&&Object.values(bmMap).some(v=>v.count>=maxBm);
+  const startTimes=sl.startTimes||{};
+
+  const bmStatus=maxBm>0
+    ?'<span style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;font-size:12px;padding:3px 10px;color:'+(hasOver?'var(--ng)':'var(--ok)')+';font-weight:600;margin-left:6px">&#x1F3B8; 1人あたり上限 '+maxBm+'バンド</span>'
+    :'<span style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;font-size:12px;padding:3px 10px;color:var(--tx3);font-weight:600;margin-left:6px">&#x1F3B8; バンマス出演数 無制限</span>';
+  const daysBadge='<span style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;font-size:12px;padding:3px 10px;color:var(--tx2);font-weight:600;margin-left:6px">'+numDays+'日開催</span>';
+  const daysCtrl='<span style="font-size:12px;color:var(--tx3);margin-right:4px">開催日数:</span>'
+    +'<select onchange="updateDays(this.value)" style="background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);padding:4px 8px;border-radius:4px;font-size:13px;font-family:inherit">'
+    +'<option value="1"'+(numDays===1?' selected':'')+'>1日</option>'
+    +'<option value="2"'+(numDays===2?' selected':'')+'>2日</option>'
+    +'<option value="3"'+(numDays===3?' selected':'')+'>3日</option>'
+    +'</select>';
+  const bmCtrl='<span style="font-size:12px;color:var(--tx3);margin-right:4px">1人あたりバンマス上限:</span>'
+    +'<input type="number" min="0" max="999" value="'+maxBm+'" inputmode="numeric"'
+    +' onchange="updateMaxBm(this.value)"'
+    +' style="width:64px;background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);padding:4px 8px;border-radius:4px;font-size:13px;font-family:inherit;text-align:center"'
+    +' title="1人が出られる最大バンド数（0で無制限）">';
+  const breakCtrl='<span style="font-size:12px;color:var(--tx3);margin-right:4px">休憩時間:</span>'
+    +'<input type="number" min="0" max="90" value="'+breakMin+'" inputmode="numeric"'
+    +' onchange="updateBreakMin(this.value)"'
+    +' style="width:56px;background:var(--bg3);border:1px solid var(--bdr);color:var(--tx);padding:4px 8px;border-radius:4px;font-size:13px;font-family:inherit;text-align:center"'
+    +' title="1日あたりの休憩時間（分）60か90推奨">分';
+  const toggleBtn='<button onclick="toggleAccepting()" class="btn btn-sm" style="'
+    +(accepting
+      ?'background:rgba(29,158,117,.15);color:var(--ok);border-color:rgba(29,158,117,.4)'
+      :'background:rgba(224,80,80,.15);color:var(--ng);border-color:rgba(224,80,80,.4)')
+    +';font-weight:700;min-width:130px">'
+    +(accepting?'&#x2705; エントリー受付中':'&#x1F6AB; エントリー停止中')
+    +'</button>';
+
+  /* 開始時刻コントロール（日数分だけ表示） */
+  const DAY_LABELS=['1日目','2日目','3日目'];
+  const DAY_KEYS=['day1','day2','day3'];
+  const startTimeCtrl='<div class="start-time-row">'
+    +'<span>&#x23F0; 開始時刻（セトリ生成時に反映）:</span>'
+    +DAY_KEYS.slice(0,numDays).map((k,i)=>{
+      const val=startTimes[k]||'';
+      return '<label>'+DAY_LABELS[i]+'</label>'
+        +'<input type="time" value="'+val+'"'
+        +' onchange="updateStartTime(\''+k+'\',this.value)"'
+        +' title="空欄にすると13:00中心で自動計算">';
+    }).join('')
+    +'<span style="color:var(--tx3);font-size:11px">※空欄＝13:00中心で自動計算</span>'
+    +'</div>';
+
+  return {numDays,maxBm,accepting,bmStatus,daysBadge,daysCtrl,bmCtrl,breakCtrl,toggleBtn,startTimeCtrl};
+}
+
+function renderAdminContent(){
+  const el=document.getElementById('admin-content');if(!el)return;
+  if(!currentSlId){el.innerHTML='';return;}
+  const sl=findSl(currentSlId);if(!sl){el.innerHTML='';return;}
+  const bands=Object.values(sl.bands||{}).sort((a,b)=>(a.addedAt||0)-(b.addedAt||0));
+  const bHtml=buildBandListHtml(bands,sl);
+  const {numDays,maxBm,bmStatus,daysBadge,daysCtrl,bmCtrl,breakCtrl,toggleBtn,startTimeCtrl}=buildControlsHtml(sl);
+
+  /* エントリー済みリストカード（コラプシブル） */
+  const entryCard='<div class="card">'
+    +'<div class="ac-card-hdr" onclick="toggleCard(\'entry-body\',\'entry-toggle\')">'
+    +'<h2 style="margin:0;flex:1">&#x300C;'+esc(sl.name)+'&#x300D;&nbsp;エントリー済み&nbsp;'+bands.length+'&#x7D44;'+daysBadge+bmStatus+'</h2>'
+    +'<span class="ac-card-toggle" id="entry-toggle">&#x2303;</span>'
+    +'</div>'
+    +'<div class="ac-card-body" id="entry-body">'
+    +'<div style="height:10px"></div>'
+    +'<div class="flex" style="margin-bottom:8px">'+toggleBtn+daysCtrl+bmCtrl+breakCtrl
+    +'<button class="btn btn-ak btn-sm" onclick="generate()">&#x30BB;&#x30C8;&#x30EA;&#x751F;&#x6210;</button>'
+    +'<button class="btn btn-sm" onclick="exportCsv()">CSV&#x30A8;&#x30AF;&#x30B9;&#x30DD;&#x30FC;&#x30C8;</button>'
+    +'</div>'
+    +startTimeCtrl
+    +bHtml
+    +'</div>'
+    +'</div>';
+
+  /* 生成されたセトリカード（従来通り） */
+  const resultCard='<div class="card"><h2>&#x751F;&#x6210;&#x3055;&#x308C;&#x305F;&#x30BB;&#x30C8;&#x30EA;'
+    +'<span style="font-size:11px;color:var(--tx3);font-weight:400;margin-left:8px">&#x2195; &#x30C9;&#x30E9;&#x30C3;&#x30B0;&#x3067;&#x4E26;&#x3073;&#x66FF;&#x3048;&#x53EF;</span></h2>'
+    +(sl.day1&&sl.day1.length?renderResult(sl):'<div class="empty">&#x307E;&#x3060;&#x751F;&#x6210;&#x3055;&#x308C;&#x3066;&#x3044;&#x307E;&#x305B;&#x3093;</div>')
+    +'</div>';
+
+  el.innerHTML=entryCard+resultCard;
+  /* コラプシブル状態を復元してから D&D 初期化 */
+  restoreCards();
+  setTimeout(initDragDrop,0);
+}
+
+/* ═══════════════════════════════════
+   セトリ生成ロジック
+═══════════════════════════════════ */
+function findConflicts(bs){
+  const groups=[];const vis=new Set();
+  for(let i=0;i<bs.length;i++){
+    if(vis.has(i))continue;
+    const g=[i];vis.add(i);
+    for(let j=i+1;j<bs.length;j++){
+      if(vis.has(j))continue;
+      const a=bs[i],b=bs[j];let hit=false;
+      for(const p of['gt1','gt2','ba']){const av=norm(a[p]),bv=norm(b[p]);if(av&&bv&&av===bv){hit=true;break;}}
+      if(!hit&&norm(a.gt1)&&norm(b.gt2)&&norm(a.gt1)===norm(b.gt2))hit=true;
+      if(!hit&&norm(a.gt2)&&norm(b.gt1)&&norm(a.gt2)===norm(b.gt1))hit=true;
+      if(hit){g.push(j);vis.add(j);}
+    }
+    groups.push(g);
+  }
+  return groups;
+}
+function bmCountMap(sl){
+  /* バンマス名（正規化）→ 出演バンド数 のマップを返す */
+  const map={};
+  Object.values(sl.bands||{}).forEach(b=>{
+    if(!b.bandmaster)return;
+    const k=norm(b.bandmaster);
+    map[k]=(map[k]||{count:0,display:b.bandmaster});
+    map[k].count++;
+  });
+  return map;
+}
+/* 現在選択中セトリへのパッチ共通処理 */
+async function patchCurrentSl(patch){
+  const sl=findSl(currentSlId);if(!sl)return;
+  await fbPatch('setlists/'+sl.fbKey,patch);
+  await pollOnce();renderAdminContent();
+}
+/* 開始時刻を更新（dayKey: 'day1'|'day2'|'day3'、value: 'HH:MM'|''） */
+async function updateStartTime(dayKey,value){
+  const sl=findSl(currentSlId);if(!sl)return;
+  const startTimes={...(sl.startTimes||{})};
+  if(value){startTimes[dayKey]=value;}else{delete startTimes[dayKey];}
+  try{await patchCurrentSl({startTimes});}
+  catch(e){alert('保存に失敗しました');}
+}
+async function toggleAccepting(){
+  const sl=findSl(currentSlId);if(!sl)return;
+  const newVal=sl.accepting===false; // false→true / その他→false
+  try{await patchCurrentSl({accepting:newVal});}
+  catch(e){alert('保存に失敗しました');}
+}
+async function updateMaxBm(val){
+  const v=Math.max(0,parseInt(val)||0);
+  try{await patchCurrentSl({maxBandmasters:v});}
+  catch(e){alert('保存に失敗しました');}
+}
+async function updateBreakMin(val){
+  const v=Math.max(0,Math.min(90,parseInt(val)||0));
+  try{await patchCurrentSl({breakMin:v});}
+  catch(e){alert('保存に失敗しました');}
+}
+async function updateDays(val){
+  const d=parseInt(val)||2;
+  try{await patchCurrentSl({days:d});}
+  catch(e){alert('保存に失敗しました');}
+}
+/* バンド出演時間（分）を計算 */
+function bandDur(b){
+  const n=Math.max(1,parseInt(b.numSongs)||1);
+  return n===1?15:15+(n-1)*5; // 1曲=15分, 2曲=20分, 3曲=25分...
+}
+/* 分 → "HH:MM" */
+function minToTime(m){
+  const h=Math.floor(m/60),mn=m%60;
+  return String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');
+}
+/* "HH:MM" → 分（午前0時起点） */
+function timeToMin(t){
+  const[h,m]=t.split(':').map(Number);return h*60+m;
+}
+const DAY_START_MIN=11*60;  // 11:00
+const DAY_END_MIN=18*60+30; // 18:30
+const CENTER_MIN=13*60;     // 13:00 = 理想的な中心
+
+function buildDaySlots(bList,breakMin,fixedStartMin){
+  /* 1. 並び替え（穏やか前半・激しい後半、共有メンバー連続） */
+  const normals=bList.filter(b=>b.intensity<4);
+  const heavys=bList.filter(b=>b.intensity>=4);
+  const sorted=[...normals,...heavys];
+  const cg=findConflicts(sorted);const cm={};
+  cg.forEach((g,gi)=>{if(g.length>1)g.forEach(i=>cm[sorted[i].id]=gi);});
+  const ordered=[];const sg=new Set();
+  sorted.forEach(b=>{
+    const gi=cm[b.id];
+    if(gi!==undefined&&!sg.has(gi)){
+      sg.add(gi);
+      cg[gi].forEach(idx=>{if(!ordered.find(x=>x.id===sorted[idx].id))ordered.push({...sorted[idx],gid:gi});});
+    } else if(gi===undefined&&!ordered.find(x=>x.id===b.id)){
+      ordered.push({...b,gid:undefined});
+    }
+  });
+
+  /* 2. 各バンドの出演時間を計算 */
+  const durs=ordered.map(b=>bandDur(b));
+
+  /* 3. 休憩スロットを挿入（バンド数の中間点の後） */
+  const slots=[]; // {type:'band'|'break', ...}
+  const breakSlots=[];
+  if(breakMin>0&&ordered.length>=2){
+    if(breakMin===90){
+      breakSlots.push({type:'break',label:'休憩',dur:60});
+      breakSlots.push({type:'break',label:'休憩',dur:30});
+    } else {
+      breakSlots.push({type:'break',label:'休憩',dur:breakMin});
+    }
+  }
+
+  /* 中間点インデックスを求める（前後のバンド数が均等に） */
+  let splitIdx=Math.floor(ordered.length/2);
+  // 前半の合計時間が後半より大きくならないよう微調整
+  let frontDur=durs.slice(0,splitIdx).reduce((s,d)=>s+d,0);
+  let backDur=durs.slice(splitIdx).reduce((s,d)=>s+d,0);
+  while(splitIdx>1&&frontDur>backDur+durs[splitIdx-1]){
+    splitIdx--;
+    frontDur-=durs[splitIdx];
+    backDur+=durs[splitIdx];
+  }
+
+  /* スロット配列を構築 */
+  ordered.forEach((b,i)=>{
+    slots.push({type:'band',band:b,dur:durs[i]});
+    if(i===splitIdx-1&&breakSlots.length>0){
+      breakSlots.forEach(br=>slots.push({...br}));
+    }
+  });
+
+  /* 4. 開始時刻を計算
+        fixedStartMin が指定されていればそれを使用、
+        なければ 13:00 中心の自動計算 */
+  const totalMin=slots.reduce((s,sl)=>s+sl.dur,0);
+  let startMin;
+  if(fixedStartMin!=null){
+    startMin=fixedStartMin;
+  } else {
+    startMin=CENTER_MIN-Math.round(totalMin/2);
+    startMin=Math.max(DAY_START_MIN,startMin);
+  }
+
+  /* 5. 18:30を超えるか警告情報を記録 */
+  const endMin=startMin+totalMin;
+  const overTime=endMin>DAY_END_MIN;
+
+  /* 6. 各スロットに時間を割り当て */
+  let cur=startMin;
+  let slotNum=0;
+  const result=[];
+  slots.forEach(sl=>{
+    if(sl.type==='band'){
+      slotNum++;
+      result.push({...sl.band,
+        slotNum,
+        ts:minToTime(cur),
+        te:minToTime(cur+sl.dur),
+        durMin:sl.dur
+      });
+    } else {
+      result.push({type:'break',label:sl.label,dur:sl.dur,ts:minToTime(cur),te:minToTime(cur+sl.dur)});
+    }
+    cur+=sl.dur;
+  });
+
+  return{slots:result,overTime,startTime:minToTime(startMin),endTime:minToTime(endMin)};
+}
+
+async function generate(){
+  const sl=findSl(currentSlId);if(!sl)return;
+  const bands=Object.values(sl.bands||{}).sort((a,b)=>(a.addedAt||0)-(b.addedAt||0));
+  const numDays=sl.days||2;
+  const breakMin=sl.breakMin||60;
+  if(bands.length<numDays){alert(numDays+'日開催のため、最低'+numDays+'組必要です');return;}
+
+  /* バンドを日程に振り分け */
+  const buckets=Array.from({length:numDays},()=>[]);
+  const used=new Set();
+  const assign=idxs=>{
+    let t=0;for(let d=1;d<numDays;d++){if(buckets[d].length<buckets[t].length)t=d;}
+    idxs.forEach(i=>{buckets[t].push(i);used.add(i);});
+  };
+  findConflicts(bands).filter(g=>g.length>1).forEach(g=>{if(!g.some(i=>used.has(i)))assign(g);});
+  const sorted=[...bands].map((b,i)=>({b,i})).sort((a,b)=>a.b.intensity-b.b.intensity);
+  sorted.filter(({i})=>bands[i].intensity<4&&!used.has(i)).forEach(({i})=>assign([i]));
+  sorted.filter(({i})=>bands[i].intensity>=4&&!used.has(i)).forEach(({i})=>assign([i]));
+
+  /* 各日のスロットを生成（開始時刻が設定されていれば固定） */
+  const startTimes=sl.startTimes||{};
+  const dayKeys=['day1','day2','day3'];
+  const dayResults=buckets.map((idxs,di)=>{
+    const tStr=startTimes[dayKeys[di]];
+    const fixedStartMin=tStr?timeToMin(tStr):null;
+    return buildDaySlots(idxs.map(i=>bands[i]),breakMin,fixedStartMin);
+  });
+  const overDays=dayResults.filter(r=>r.overTime);
+  if(overDays.length>0){
+    if(!confirm('一部の日程が18:30を超えます。このまま生成しますか？'))return;
+  }
+
+  try{
+    const patch={};
+    ['day1','day2','day3'].forEach((k,i)=>patch[k]=dayResults[i]?dayResults[i].slots:[]);
+    await fbPatch('setlists/'+sl.fbKey,patch);
+    await pollOnce();renderAdminContent();
+  }catch(e){alert('保存に失敗しました');}
+}
+
+/* ═══════════════════════════════════
+   結果描画
+═══════════════════════════════════ */
+function renderResult(sl){
+  const numDays=sl.days||2;
+  const daySlots=[(sl.day1||[]),(sl.day2||[]),(sl.day3||[])].slice(0,numDays);
+  const total=daySlots.reduce((s,d)=>s+d.length,0);
+  const DAY_COLORS=['dh1','dh2','dh3'];
+  const bandSlots=slots=>slots.filter(s=>s.type!=='break');
+  const totalBands=daySlots.reduce((s,d)=>s+bandSlots(d).length,0);
+  let stats='<div class="stat-row"><div class="stat"><div class="stat-val">'+totalBands+'</div><div class="stat-lbl">総バンド</div></div>';
+  daySlots.forEach((d,i)=>{
+    const bs=bandSlots(d);
+    const startT=d.length?d[0].ts:'';
+    const endT=d.length?d[d.length-1].te:'';
+    const totalDur=d.reduce((s,sl)=>s+(sl.durMin||sl.dur||0),0);
+    stats+='<div class="stat"><div class="stat-val">'+bs.length+'</div><div class="stat-lbl">'+(i+1)+'日目</div></div>';
+    stats+='<div class="stat"><div class="stat-val" style="font-size:13px">'+startT+'&#x301C;'+endT+'</div><div class="stat-lbl">'+(i+1)+'日目時間帯</div></div>';
+  });
+  stats+='</div>';
+  const rs=(slots,dayIdx)=>{
+    if(!slots||!slots.length)return'<div class="empty day-drop-zone" data-day="'+dayIdx+'">バンドなし</div>';
+    return slots.map((s,si)=>s.type==='break'?breakHtml(s,dayIdx,si):shHtml(s,dayIdx,si)).join('');
+  };
+  const cols=numDays===1?'1fr':numDays===2?'1fr 1fr':'1fr 1fr 1fr';
+  let grid='<div class="days-grid" style="grid-template-columns:'+cols+'">';
+  daySlots.forEach((d,i)=>{
+    grid+='<div><div class="day-hdr '+DAY_COLORS[i]+'">DAY '+(i+1)+' &#8212; '+d.length+'バンド</div>'
+      +'<div class="day-drop-zone" data-day="'+i+'">'+rs(d,i)+'</div></div>';
+  });
+  grid+='</div>';
+  return stats+grid;
+}
+function breakHtml(s,dayIdx,si){
+  return'<div class="slot-card break-slot" data-day="'+dayIdx+'" data-slot="'+si+'" style="background:rgba(80,144,224,.06);border:1px dashed rgba(80,144,224,.3)">'
+    +'<div style="font-size:20px;color:var(--info)">&#x2615;</div>'
+    +'<div class="sbody">'
+    +'<div class="stime">'+s.ts+' &#8212; '+s.te+'</div>'
+    +'<div class="sname" style="color:var(--info)">&#x4F11;&#x61A9;&#xFF08;'+s.dur+'&#x5206;&#xFF09;</div>'
+    +'</div></div>';
+}
+function shHtml(s,dayIdx,slotIdx){
+  return'<div class="slot-card" draggable="true" data-day="'+dayIdx+'" data-slot="'+slotIdx+'">'
+    +'<div class="drag-handle" title="ドラッグで並べ替え">&#x2195;</div>'
+    +'<div class="snum">'+s.slotNum+'</div>'
+    +'<div class="sbody">'
+    +'<div class="stime">'+s.ts+' &#8212; '+s.te+'</div>'
+    +'<div class="sname">'+esc(s.name)+ibadge(s.intensity)+'</div>'
+    +'<div class="ssong">&#9834; '+esc(s.song)+(s.bpm?' BPM '+esc(s.bpm):'')+(s.numSongs?' / '+s.numSongs+'&#x66F2; ('+s.durMin+'&#x5206;)':'')+'</div>'
+    +(s.bandmaster?'<div class="smem" style="color:var(--ak2)">&#x1F3B8; バンマス: '+esc(s.bandmaster)+'</div>':'')
+    +'<div class="smem">'+mstr(s)+'</div>'
+    +'</div></div>';
+}
+
+/* ═══════════════════════════════════
+   CSVエクスポート
+═══════════════════════════════════ */
+function exportCsv(){
+  const sl=findSl(currentSlId);
+  if(!sl){alert('セトリを選択してください');return;}
+  const hasResult=(sl.day1&&sl.day1.length)||(sl.day2&&sl.day2.length);
+  if(!hasResult){alert('先にセトリを生成してください');return;}
+
+  const LEVELS=['','穏やか','やや穏やか','ふつう','やや激しい','激しい'];
+  const rows=[];
+
+  // ヘッダー情報
+  rows.push(['セトリ名',sl.name]);
+  rows.push(['エクスポート日時',new Date().toLocaleString('ja-JP')]);
+  rows.push([]);
+
+  // 列ヘッダー
+  rows.push(['日程','順番','開始','終了','バンド名','バンマス','曲名','BPM','雰囲気','Vo','Gt1','Gt2','Ba','Key','Dr','備考']);
+
+  const numDaysEx=sl.days||2;
+  const dayLabels=['1日目','2日目','3日目'];
+  [[sl.day1||[],0],[sl.day2||[],1],[sl.day3||[],2]].slice(0,numDaysEx).forEach(([slots,di])=>{
+    slots.forEach(s=>{
+      rows.push([
+        dayLabels[di],
+        s.slotNum,
+        s.ts,
+        s.te,
+        s.name,
+        s.bandmaster||'',
+        s.song,
+        s.bpm||'',
+        LEVELS[s.intensity]||'',
+        s.vo||'',s.gt1||'',s.gt2||'',s.ba||'',s.key||'',s.dr||'',
+        s.gid!==undefined?'共有メンバー':''
+      ]);
+    });
+    if(slots.length) rows.push([]);
+  });
+
+  // CSV文字列生成（BOM付きでExcel/Sheetsが文字化けしない）
+  const csvContent=rows.map(r=>r.map(cell=>{
+    const s=String(cell==null?'':cell);
+    return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;
+  }).join(',')).join('\r\n');
+
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csvContent],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=sl.name.replace(/[\\/:*?"<>|]/g,'_')+'_セトリ.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+/* ═══════════════════════════════════
+   名簿管理
+═══════════════════════════════════ */
+async function loadRoster(){
+  try{
+    const d=await fbGet('roster');
+    roster=Array.isArray(d)?d:(d?Object.values(d):[]);
+  }catch(e){roster=[];}
+  renderRosterAdmin();
+}
+async function saveRoster(){
+  try{await fbSet('roster',roster);}
+  catch(e){alert('名簿の保存に失敗しました');}
+}
+function renderRosterAdmin(){
+  const el=document.getElementById('roster-list');
+  const cnt=document.getElementById('roster-count');
+  if(cnt)cnt.textContent=roster.length+'名登録';
+  const _badge=document.getElementById('roster-count-badge');if(_badge)_badge.textContent=roster.length?'（'+roster.length+'名）':'';
+  if(!el)return;
+  if(!roster.length){el.innerHTML='<div class="empty">名簿が空です</div>';return;}
+  el.innerHTML=roster.map((m,i)=>'<div class="roster-row"><span class="roster-nm">'+esc(m.name)+'</span>'+(m.reading?'<span class="roster-rd">'+esc(m.reading)+'</span>':'')+'<button class="btn btn-sm btn-danger" onclick="deleteRosterMember('+i+')" style="min-height:30px;padding:3px 8px">×</button></div>').join('');
+}
+function importRoster(){
+  const txt=document.getElementById('roster-import-txt').value.trim();
+  const msg=document.getElementById('roster-import-msg');
+  if(!txt){msg.className='msg-err';msg.textContent='テキストを貼り付けてください';return;}
+  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  const added=[];
+  lines.forEach(line=>{
+    const parts=line.split(/\t|,/);
+    const name=(parts[0]||'').trim();
+    const reading=(parts[1]||'').trim();
+    if(name&&!roster.find(m=>m.name===name))added.push({name,reading});
+  });
+  if(!added.length){msg.className='msg-err';msg.textContent='新しい名前がありませんでした（重複は除外）';return;}
+  roster=[...roster,...added];
+  saveRoster();
+  document.getElementById('roster-import-txt').value='';
+  renderRosterAdmin();
+  msg.className='msg-ok';msg.textContent=added.length+'名追加しました';
+  setTimeout(()=>msg.textContent='',4000);
+}
+function addRosterMember(){
+  const name=document.getElementById('roster-add-name').value.trim();
+  const reading=document.getElementById('roster-add-reading').value.trim();
+  if(!name){alert('名前を入力してください');return;}
+  if(roster.find(m=>m.name===name)){alert('すでに登録されています');return;}
+  roster.push({name,reading});
+  saveRoster();
+  document.getElementById('roster-add-name').value='';
+  document.getElementById('roster-add-reading').value='';
+  renderRosterAdmin();
+}
+function deleteRosterMember(i){
+  if(!confirm(roster[i].name+'を削除しますか？'))return;
+  roster.splice(i,1);
+  saveRoster();
+  renderRosterAdmin();
+}
+function clearRoster(){
+  if(!confirm('名簿を全削除しますか？'))return;
+  roster=[];saveRoster();renderRosterAdmin();
+}
+
+/* ═══════════════════════════════════
+   オートコンプリート
+═══════════════════════════════════ */
+/* ROMAJI_MAP は toHiragana() で先頭から最長一致で順に適用される。
+   1行目の 'sha'→'し' と 3行目の 'sha'→'しゃ' は重複しているが、
+   最長一致で1行目が先にマッチするため 'sha'→'しゃ' には到達しない（意図的な非到達）。
+   動作を変えるリスクがあるため、このエントリの削除・並び替えは行わない。 */
+const ROMAJI_MAP=[
+  ['sha','し'],['shi','し'],['chi','ち'],['tsu','つ'],
+  ['shu','しゅ'],['sho','しょ'],['sha','しゃ'], // ← 'sha'は上で先にマッチするため非到達
+  ['cha','ちゃ'],['chu','ちゅ'],['cho','ちょ'],
+  ['kya','きゃ'],['kyu','きゅ'],['kyo','きょ'],
+  ['nya','にゃ'],['nyu','にゅ'],['nyo','にょ'],
+  ['hya','ひゃ'],['mya','みゃ'],['rya','りゃ'],
+  ['ryu','りゅ'],['ryo','りょ'],['gya','ぎゃ'],
+  ['gyu','ぎゅ'],['gyo','ぎょ'],
+  ['ja','じゃ'],['ji','じ'],['ju','じゅ'],['jo','じょ'],
+  ['bya','びゃ'],['pya','ぴゃ'],
+  ['ka','か'],['ki','き'],['ku','く'],['ke','け'],['ko','こ'],
+  ['sa','さ'],['si','し'],['su','す'],['se','せ'],['so','そ'],
+  ['ta','た'],['ti','ち'],['tu','つ'],['te','て'],['to','と'],
+  ['na','な'],['ni','に'],['nu','ぬ'],['ne','ね'],['no','の'],
+  ['ha','は'],['hi','ひ'],['fu','ふ'],['hu','ふ'],['he','へ'],['ho','ほ'],
+  ['ma','ま'],['mi','み'],['mu','む'],['me','め'],['mo','も'],
+  ['ya','や'],['yu','ゆ'],['yo','よ'],
+  ['ra','ら'],['ri','り'],['ru','る'],['re','れ'],['ro','ろ'],
+  ['wa','わ'],['wo','を'],['nn','ん'],['n','ん'],
+  ['ga','が'],['gi','ぎ'],['gu','ぐ'],['ge','げ'],['go','ご'],
+  ['za','ざ'],['zi','じ'],['zu','ず'],['ze','ぜ'],['zo','ぞ'],
+  ['da','だ'],['de','で'],['do','ど'],
+  ['ba','ば'],['bi','び'],['bu','ぶ'],['be','べ'],['bo','ぼ'],
+  ['pa','ぱ'],['pi','ぴ'],['pu','ぷ'],['pe','ぺ'],['po','ぽ'],
+  ['a','あ'],['i','い'],['u','う'],['e','え'],['o','お'],
+];
+function toHiragana(s){
+  s=s.toLowerCase();
+  // katakana→hiragana
+  s=s.replace(/[\u30A1-\u30F6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  // romaji→hiragana（最長一致）
+  let out='',i=0;
+  while(i<s.length){
+    let matched=false;
+    for(const[rom,hira]of ROMAJI_MAP){
+      if(s.startsWith(rom,i)){out+=hira;i+=rom.length;matched=true;break;}
+    }
+    if(!matched){out+=s[i];i++;}
+  }
+  return out;
+}
+function searchRoster(q){
+  if(!roster.length||!q)return[];
+  const ql=q.toLowerCase();
+  const qH=toHiragana(ql);
+  const scored=roster.map(m=>{
+    const nm=m.name.toLowerCase();
+    const rd=(m.reading||'').toLowerCase();
+    const rdH=toHiragana(rd);
+    let score=0;
+    if(nm===ql||rd===ql||rdH===qH)score=100;
+    else if(nm.startsWith(ql)||rd.startsWith(ql)||rdH.startsWith(qH))score=80;
+    else if(nm.includes(ql)||rd.includes(ql)||rdH.includes(qH))score=60;
+    else{
+      // 文字オーバーラップ（漢字の別表記対応）
+      const overlap=[...ql].filter(c=>nm.includes(c)||rd.includes(c)).length;
+      if(ql.length>=2&&overlap>=Math.ceil(ql.length*0.6))score=30;
+    }
+    return{m,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8);
+  return scored.map(x=>x.m);
+}
+
+const AC_IDS=['u-bandmaster','u-vo','u-gt1','u-gt2','u-ba','u-key','u-dr'];
+let acTarget=null,acIdx=-1,acResults=[];
+let acDrop=null; // initAutocomplete で一度だけ取得してキャッシュ
+
+function initAutocomplete(){
+  acDrop=document.getElementById('ac-drop');
+  AC_IDS.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('input',()=>showAc(el));
+    el.addEventListener('keydown',e=>acKeydown(e));
+    el.addEventListener('blur',()=>setTimeout(hideAc,200));
+  });
+  acDrop.addEventListener('mousedown',e=>e.preventDefault());
+}
+function showAc(input){
+  const q=input.value.trim();
+  acResults=searchRoster(q);
+  if(!acResults.length||!q){acDrop.style.display='none';return;}
+  acTarget=input;acIdx=-1;
+  acDrop.innerHTML=acResults.map((m,i)=>'<div class="ac-item" data-i="'+i+'">'+'<span class="ac-nm">'+esc(m.name)+'</span>'+(m.reading?'<span class="ac-rd">'+esc(m.reading)+'</span>':'')+'</div>').join('');
+  acDrop.querySelectorAll('.ac-item').forEach((el,i)=>{
+    el.addEventListener('mousedown',e=>{e.preventDefault();acSelect(acResults[i].name);});
+    el.addEventListener('touchstart',e=>{e.preventDefault();acSelect(acResults[i].name);},{passive:false});
+  });
+  const r=input.getBoundingClientRect();
+  acDrop.style.left=Math.min(r.left,window.innerWidth-220)+'px';
+  acDrop.style.top=(r.bottom+window.scrollY+2)+'px';
+  acDrop.style.position='absolute';
+  acDrop.style.minWidth=r.width+'px';
+  acDrop.style.display='block';
+}
+function hideAc(){
+  if(acDrop)acDrop.style.display='none';
+  acTarget=null;acIdx=-1;acResults=[];
+}
+function acSelect(name){
+  if(acTarget)acTarget.value=name;
+  hideAc();
+}
+function acKeydown(e){
+  if(!acDrop||acDrop.style.display==='none')return;
+  const items=acDrop.querySelectorAll('.ac-item');
+  if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);}
+  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();if(acResults[acIdx])acSelect(acResults[acIdx].name);return;}
+  else if(e.key==='Escape'){hideAc();return;}
+  items.forEach((it,i)=>it.classList.toggle('ac-on',i===acIdx));
+  if(acIdx>=0)items[acIdx].scrollIntoView({block:'nearest'});
+}
+
+/* ═══════════════════════════════════
+   ドラッグ&ドロップ / タッチ並び替え
+═══════════════════════════════════ */
+let dragSrc={day:null,slot:null};
+let touchDragEl=null,touchClone=null;
+let activeIndicator=null; // 現在表示中のインジケーター要素
+let dropTarget={day:null,slot:null,before:true}; // 挿し込み先
+
+/* インジケーター（青いライン）を表示 */
+function showIndicator(zone,refCard,before){
+  hideIndicator();
+  const ind=document.createElement('div');
+  ind.className='drop-indicator active';
+  if(before){
+    zone.insertBefore(ind,refCard);
+  } else {
+    refCard.insertAdjacentElement('afterend',ind);
+  }
+  activeIndicator=ind;
+}
+function hideIndicator(){
+  if(activeIndicator){activeIndicator.remove();activeIndicator=null;}
+}
+
+/* カード上での位置（上半分ならbefore=true） */
+function isUpperHalf(card,clientY){
+  const rect=card.getBoundingClientRect();
+  return clientY<rect.top+rect.height/2;
+}
+
+function initDragDrop(){
+  const zone=document.querySelectorAll('.day-drop-zone');
+  const cards=document.querySelectorAll('.slot-card[draggable]');
+
+  cards.forEach(card=>{
+    /* ── マウス: ドラッグ開始 ── */
+    card.addEventListener('dragstart',e=>{
+      dragSrc.day=parseInt(card.dataset.day);
+      dragSrc.slot=parseInt(card.dataset.slot);
+      setTimeout(()=>card.classList.add('dragging'),0);
+      e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragend',()=>{
+      card.classList.remove('dragging');
+      hideIndicator();
+    });
+
+    /* ── マウス: 他カード上をドラッグ中 ── */
+    card.addEventListener('dragover',e=>{
+      e.preventDefault();e.stopPropagation();
+      if(parseInt(card.dataset.day)===dragSrc.day&&parseInt(card.dataset.slot)===dragSrc.slot)return;
+      const before=isUpperHalf(card,e.clientY);
+      const tDay=parseInt(card.dataset.day);
+      const tSlot=parseInt(card.dataset.slot);
+      dropTarget={day:tDay,slot:tSlot,before};
+      const parentZone=card.closest('.day-drop-zone');
+      showIndicator(parentZone,card,before);
+    });
+
+    /* ── マウス: ドロップ ── */
+    card.addEventListener('drop',e=>{
+      e.preventDefault();
+      hideIndicator();
+      if(dragSrc.day===null)return;
+      const tDay=parseInt(card.dataset.day);
+      const tSlot=parseInt(card.dataset.slot);
+      const before=isUpperHalf(card,e.clientY);
+      if(dragSrc.day===tDay&&dragSrc.slot===tSlot)return;
+      insertSlot(dragSrc.day,dragSrc.slot,tDay,tSlot,before);
+    });
+  });
+
+  /* ── ゾーン全体のdragover（カード間の隙間対応） ── */
+  zone.forEach(z=>{
+    z.addEventListener('dragover',e=>{
+      e.preventDefault();
+      /* 子カードのdragoverが先に処理されるのでここはfallback */
+    });
+    z.addEventListener('dragleave',e=>{
+      if(!z.contains(e.relatedTarget))hideIndicator();
+    });
+    z.addEventListener('drop',e=>{
+      e.preventDefault();
+      hideIndicator();
+    });
+  });
+
+  /* ── タッチ ── */
+  cards.forEach(card=>{
+    card.addEventListener('touchstart',e=>{
+      if(card.classList.contains('break-slot'))return;
+      touchDragEl=card;
+      const touch=e.touches[0];
+      const rect=card.getBoundingClientRect();
+      touchClone=card.cloneNode(true);
+      touchClone.style.cssText='position:fixed;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;opacity:.7;pointer-events:none;z-index:9999;background:var(--bg2);border:1px solid var(--ak);border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+      document.body.appendChild(touchClone);
+      card.classList.add('dragging');
+    },{passive:true});
+
+    card.addEventListener('touchmove',e=>{
+      if(!touchClone||!touchDragEl)return;
+      const touch=e.touches[0];
+      touchClone.style.left=(touch.clientX-touchClone.offsetWidth/2)+'px';
+      touchClone.style.top=(touch.clientY-30)+'px';
+      touchClone.style.display='none';
+      const el=document.elementFromPoint(touch.clientX,touch.clientY);
+      touchClone.style.display='';
+      const target=el?el.closest('.slot-card[draggable]'):null;
+      if(target&&target!==touchDragEl){
+        const before=isUpperHalf(target,touch.clientY);
+        const parentZone=target.closest('.day-drop-zone');
+        showIndicator(parentZone,target,before);
+        dropTarget={day:parseInt(target.dataset.day),slot:parseInt(target.dataset.slot),before};
+      } else if(!target){
+        hideIndicator();
+        dropTarget={day:null,slot:null,before:true};
+      }
+    },{passive:true});
+
+    card.addEventListener('touchend',()=>{
+      if(touchClone){touchClone.remove();touchClone=null;}
+      if(touchDragEl){touchDragEl.classList.remove('dragging');}
+      hideIndicator();
+      if(dropTarget.day!==null&&touchDragEl){
+        const sDay=parseInt(touchDragEl.dataset.day);
+        const sSlot=parseInt(touchDragEl.dataset.slot);
+        if(!(sDay===dropTarget.day&&sSlot===dropTarget.slot)){
+          insertSlot(sDay,sSlot,dropTarget.day,dropTarget.slot,dropTarget.before);
+        }
+      }
+      touchDragEl=null;
+      dropTarget={day:null,slot:null,before:true};
+    });
+  });
+}
+
+/* 各スロット配列に開始・終了時刻と slotNum を付与する共通ヘルパー */
+function assignTimes(arr){
+  if(!arr.length)return;
+  const startMin=arr[0].ts?timeToMin(arr[0].ts):13*60;
+  let cur=startMin,bandNum=0;
+  arr.forEach(s=>{
+    const d=s.type==='break'?(s.dur||60):bandDur(s);
+    s.ts=minToTime(cur);s.te=minToTime(cur+d);s.durMin=d;
+    if(s.type!=='break'){bandNum++;s.slotNum=bandNum;}
+    cur+=d;
+  });
+}
+
+async function insertSlot(srcDay,srcSlot,tgtDay,tgtSlot,before){
+  const sl=findSl(currentSlId);if(!sl)return;
+  const keys=['day1','day2','day3'];
+  const days=[(sl.day1||[]).slice(),(sl.day2||[]).slice(),(sl.day3||[]).slice()];
+  const srcItem=days[srcDay][srcSlot];
+  if(!srcItem||srcItem.type==='break')return;
+
+  /* 1. 取り出し */
+  days[srcDay].splice(srcSlot,1);
+
+  /* 2. 挿入位置を計算
+        before=true  → tgtSlot の直前に挿入
+        before=false → tgtSlot の直後に挿入
+     取り出し後に同じ日でインデックスがずれる場合を補正 */
+  let insertIdx=before?tgtSlot:tgtSlot+1;
+  if(srcDay===tgtDay&&srcSlot<tgtSlot){
+    /* 取り出した分だけ後ろにずれているので補正 */
+    insertIdx=Math.max(0,insertIdx-1);
+  }
+  insertIdx=Math.max(0,Math.min(insertIdx,days[tgtDay].length));
+  days[tgtDay].splice(insertIdx,0,srcItem);
+
+  /* 3. 時刻を再計算 */
+  days.forEach(assignTimes);
+
+  const patch={};
+  keys.forEach((k,i)=>patch[k]=days[i]);
+  try{
+    await fbPatch('setlists/'+sl.fbKey,patch);
+    await pollOnce();renderAdminContent();
+  }catch(e){alert('保存に失敗しました');}
+}
+
+/* ═══════════════════════════════════
+   折りたたみカード
+═══════════════════════════════════ */
+function toggleCard(bodyId, toggleId){
+  const body=document.getElementById(bodyId);
+  const toggle=document.getElementById(toggleId);
+  if(!body||!toggle)return;
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  toggle.classList.toggle('open',!isOpen);
+  /* ローカルに開閉状態を記憶 */
+  try{localStorage.setItem('admin_card_'+bodyId,isOpen?'0':'1');}catch(e){}
+}
+function restoreCards(){
+  /* id → デフォルト開閉（true=開く） */
+  const DEFAULTS={'pw-body':false,'roster-body':false,'entry-body':true};
+  Object.entries(DEFAULTS).forEach(([id,defaultOpen])=>{
+    const saved=localStorage.getItem('admin_card_'+id);
+    const open=saved===null?defaultOpen:saved==='1';
+    const body=document.getElementById(id);
+    const toggle=document.getElementById(id.replace('-body','-toggle'));
+    if(body){body.classList.toggle('open',open);}
+    if(toggle){toggle.classList.toggle('open',open);}
+  });
+}
+
+async function init(){
+  buildSlider();
+  setSyncStatus('u',false,'接続中...');
+  try{
+    const[slData,cfgData]=await Promise.all([fbGet('setlists'),fbGet('config')]);
+    slMap=slData||{};
+    if(cfgData&&cfgData.pw)pw=cfgData.pw;
+    setSyncStatus('u',true,'Firebase 接続済み（自動更新中）');
+    renderUserSlList();
+    await loadRoster();
+    initAutocomplete();
+    startPolling();
+    restoreCards();
+  }catch(e){
+    setSyncStatus('u',false,'Firebase 接続エラー。通信環境を確認してリロードしてください。');
+    document.getElementById('u-sl-list').innerHTML='<div class="empty">Firebase に接続できません。<br>通信環境を確認してページをリロードしてください。</div>';
+  }
+}
+init();
+</script>
+<div id="ac-drop"></div>
+</body>
+</html>
